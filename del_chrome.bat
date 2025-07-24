@@ -1,10 +1,9 @@
 @echo off
-echo =========== DỌN DẸP CHROME TOÀN DIỆN ==========
+echo =====================
 
-:: Tắt Chrome
-echo Đóng Chrome...
+echo Dong Chrome...
 taskkill /F /IM chrome.exe >nul 2>&1
 
-:: Xoá toàn bộ User Data của Chrome
-echo Xoá toàn bộ profile Chrome...
+:: dell all data user
+echo Dell all profile Chrome...
 rd /s /q "%LOCALAPPDATA%\Google\Chrome\User Data"
