@@ -1,27 +1,21 @@
 @echo off
-echo ========== XOA TOAN BO DULIEU CHROME ==========
+echo ======== XOA DU LIEU CHROME - AUTO USER DETECT ========
 
 :: 1. Tắt Chrome
-echo Đóng Chrome...
 taskkill /F /IM chrome.exe >nul 2>&1
 
-:: 2. Xóa toàn bộ dữ liệu user của Chrome
-echo Xóa thư mục: %LOCALAPPDATA%\Google\Chrome\User Data
-rd /s /q "%LOCALAPPDATA%\Google\Chrome\User Data"
+:: 2. Tìm user đang login (bỏ qua SYSTEM)
+for /f "tokens=1,*" %%a in ('query user ^| findstr /i "active"') do set realuser=%%a
 
-:: 3. Xóa backup session còn sót ở AppData\Roaming
-echo Xóa %APPDATA%\Google\Chrome
-rd /s /q "%APPDATA%\Google\Chrome"
+:: 3. Gán đường dẫn user profile
+set "ChromePath=C:\Users\%realuser%\AppData\Local\Google\Chrome\User Data"
 
-:: 4. Xóa thư mục crash restore Chrome nếu có
-rd /s /q "%LOCALAPPDATA%\CrashDumps" >nul 2>&1
+:: 4. Xoá nếu có
+if exist "%ChromePath%" (
+    echo Dang xoa Chrome profile cua user: %realuser%
+    rd /s /q "%ChromePath%"
+) else (
+    echo ❗ Khong tim thay du lieu Chrome cho user %realuser%.
+)
 
-:: 5. Xóa thư mục Chrome profile "System Profile" nếu tồn tại
-rd /s /q "C:\Windows\System32\config\systemprofile\AppData\Local\Google\Chrome" >nul 2>&1
-
-:: 6. Xóa thư mục Session Restore dạng thô
-del /f /q "%LOCALAPPDATA%\Google\Chrome\User Data\*Session*" >nul 2>&1
-del /f /q "%LOCALAPPDATA%\Google\Chrome\User Data\*Tabs*" >nul 2>&1
-
-echo ✅ Đã xóa sạch dữ liệu và cache Chrome.
-pause
+echo ✅ Hoan tat.
