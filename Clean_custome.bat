@@ -88,11 +88,10 @@ echo Đóng các ứng dụng được chỉ định...
 		)
 ::4. Xóa thư mục C:\Program Files\OBS...
 	echo [4/7] Xóa thư mục C:\Program Files\OBS...
-		:: Chiếm quyền thư mục nếu bị khóa (yêu cầu chạy bằng admin)
 		takeown /F "C:\Program Files\OBS" /R /D Y >nul 2>&1
-		icacls "C:\Program Files\OBS" /grant administrators:F /T >nul 2>&1
-
-		:: Xóa thư mục
+		icacls "C:\Program Files\OBS" /reset /T >nul 2>&1
+		icacls "C:\Program Files\OBS" /grant %username%:F /T >nul 2>&1
+		echo → Đang xoá thư mục OBS...
 		rd /s /q "C:\Program Files\OBS"
 
 :: 5. Xóa file trong các thư mục người dùng
@@ -113,7 +112,17 @@ echo Đóng các ứng dụng được chỉ định...
   		  echo --- Xoá thư mục trong %%u\Pictures
   		  for /d %%d in ("%%u\Pictures\*") do rd /s /q "%%d"
   		  del /f /q "%%u\Pictures\*" >nul 2>&1
+
+		  echo --- Xoá thư mục trong %%u\Videos
+  		  for /d %%d in ("%%u\Videos\*") do rd /s /q "%%d"
+  		  del /f /q "%%u\Videos\*" >nul 2>&1
 		)
+
+	echo ========== XÓA THÙNG RÁC TRÊN DESKTOP ==========
+
+		echo → Đang xoá toàn bộ Recycle Bin...
+		PowerShell -Command "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"
+		echo ✅ Đã xoá toàn bộ nội dung trong Thùng rác.
 
 	:: Xoá Recent Files + JumpList (Quick Access)
 		echo --- Xoá Quick Access (Recent Files, JumpList)
@@ -143,37 +152,37 @@ echo Đóng các ứng dụng được chỉ định...
       			  call :DeleteIfNotShortcutAndNotCustom "%%f"
   			  )
 			)
+
+			:: Duyệt tất cả thư mục user & xoa telegram
+			for /d %%u in ("C:\Users\*") do (
+    			call :uninstallTelegram "%%~fu"
+			)
+
+			
 		echo.
-	echo ✅ Đã xoá xong, giữ shortcut và Clean_custome.bat.
+		echo ✅ Đã xoá xong, giữ shortcut và Clean_custome.bat.
 		exit /b
 
 			:DeleteIfNotShortcutAndNotCustom
-			setlocal
-			set "target=%~1"
-			set "ext=%~x1"
-			set "name=%~nx1"
-			if /i "%ext%"==".lnk" exit /b
-			if /i "%name%"=="Clean_custome.bat" exit /b
-			del /f /q "%target%" >nul 2>&1
+				setlocal
+				set "target=%~1"
+				set "ext=%~x1"
+				set "name=%~nx1"
+				if /i "%ext%"==".lnk" exit /b
+				if /i "%name%"=="Clean_custome.bat" exit /b
+				del /f /q "%target%" >nul 2>&1
+			
+			:uninstallTelegram
+				setlocal
+				set "uninsPath=%~1\AppData\Roaming\Telegram Desktop\unins000.exe"
+				if exist "%uninsPath%" (
+  	 			 echo → Gỡ Telegram tại: %uninsPath%
+  	 			 start "" "%uninsPath%" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+				)
+			
 			endlocal
 			exit /b
 
 =============
 
-echo [7/7] ĐÓNG TELEGRAM & GỠ CÀI ĐẶT TOÀN HỆ THỐNG
-	@echo off
-	echo ========== ĐÓNG TELEGRAM & GỠ CÀI ĐẶT TOÀN HỆ THỐNG ==========
 
-		for /d %%u in (C:\Users\*) do (
- 		   set "tele=%%u\AppData\Roaming\Telegram Desktop\unins000.exe"
- 		   if exist "%%u\AppData\Roaming\Telegram Desktop\unins000.exe" (
-
-    		    echo → Đóng Telegram của user %%~nxu...
-    		    taskkill /F /IM Telegram.exe >nul 2>&1
-
-   		     echo → Gỡ Telegram: %%~nxu
-  		      start "" "%%u\AppData\Roaming\Telegram Desktop\unins000.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
-   		 )
-		)
-	echo.
-	echo ✅ Đã xử lý đóng và gỡ Telegram nếu có.
